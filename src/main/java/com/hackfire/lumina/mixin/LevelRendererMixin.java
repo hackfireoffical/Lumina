@@ -8,13 +8,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Terrain / shadow capture hook. Full Sodium shader injection comes later.
+ * World render hook for future low-res shadow capture.
+ * Uses setWorld as a stable, low-risk inject point for the skeleton build.
  */
 @Mixin(LevelRenderer.class)
 public class LevelRendererMixin {
-    @Inject(method = "render", at = @At("HEAD"))
-    private void lumina$onRenderStart(CallbackInfo ci) {
-        if (LuminaClient.getConfig() == null || !LuminaClient.getConfig().enabled) return;
-        // Future: update low-res shadow map when softShadows && under budget
+    @Inject(method = "setWorld" , at = @At("TAIL"))
+    private void lumina$onWorldChange(CallbackInfo ci) {
+        if (LuminaClient.getConfig() == null || !LuminaClient.getConfig().enabled) {
+            return;
+        }
+        // Future: reset shadow caches on world change
     }
 }

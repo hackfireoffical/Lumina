@@ -8,14 +8,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Hook for post-processing (god rays, bloom) after world render.
- * Intentionally empty for v0.1 — skeleton only.
+ * Post-frame hook for future god rays / bloom.
  */
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
-    @Inject(method = "render", at = @At("RETURN"))
-    private void lumina$onRenderEnd(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
-        if (LuminaClient.getConfig() == null || !LuminaClient.getConfig().enabled) return;
-        // Future: apply cheap post passes when under budget
+    @Inject(method = "render" , at = @At("TAIL"))
+    private void lumina$afterRender(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
+        if (LuminaClient.getConfig() == null || !LuminaClient.getConfig().enabled) {
+            return;
+        }
+        // Future: cheap post passes when under budget
     }
 }

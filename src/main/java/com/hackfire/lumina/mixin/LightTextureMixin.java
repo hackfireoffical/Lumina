@@ -5,18 +5,20 @@ import com.hackfire.lumina.config.LuminaConfig;
 import net.minecraft.client.render.LightmapTextureManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Subtle ambient / direct light boost without heavy shaders.
- * Safe on every device.
+ * Skeleton hook on lightmap update. Full ambient curve comes later.
  */
 @Mixin(LightmapTextureManager.class)
 public class LightTextureMixin {
-    @ModifyVariable(method = "update", at = @At("STORE"), ordinal = 1)
-    private float lumina$adjustSkyFactor(float sky) {
+    @Inject(method = "update" , at = @At("HEAD"))
+    private void lumina$onLightmapUpdate(float delta, CallbackInfo ci) {
         LuminaConfig cfg = LuminaClient.getConfig();
-        if (cfg == null || !cfg.enabled || !cfg.improvedAmbient) return sky;
-        return Math.min(1.0f, sky * cfg.ambientStrength);
+        if (cfg == null || !cfg.enabled || !cfg.improvedAmbient) {
+            return;
+        }
+        // Future: adjust lightmap curve without fragile ModifyVariable
     }
 }
