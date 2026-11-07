@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "lumina",
+  "version": "${version}",
+  "name": "Lumina",
+  "description": "Performance-first visual overhaul inspired by Complementary Unbound. Soft lighting, water, clouds and god rays — built for phones and low-end hardware. Sodium-native, no Iris required.",
+  "authors": ["hackfireoffical"],
+  "contact": {
+    "sources": "https://github.com/hackfireoffical/Lumina"
+  },
+  "license": "MIT",
+  "icon": "assets/lumina/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.hackfire.lumina.LuminaClient"
+    ]
+  },
+  "mixins": [
+    "lumina.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.14",
+    "fabric-api": "*",
+    "minecraft": "1.20.1",
+    "java": ">=17",
+    "sodium": ">=0.5.8"
+  },
+  "suggests": {
+    "iris": "*"
+  }
+}
