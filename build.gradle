@@ -25,8 +25,11 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    // Sodium — compileOnly so we do not ship it; required at runtime by fabric.mod.json
-    modCompileOnly "maven.modrinth:sodium:${project.sodium_version}"
+    // Sodium is required at runtime (fabric.mod.json depends),
+    // but we do not reference its APIs in source yet — so no compile dependency.
+    // When Sodium APIs are needed, add e.g.:
+    //   modCompileOnly "maven.modrinth:sodium:mc1.20.1-0.5.11"
+    // (use the exact version string published on Modrinth)
 }
 
 processResources {
@@ -54,7 +57,6 @@ jar {
     }
 }
 
-// Remap jar is the playable mod artifact (fabric-loom)
 remapJar {
     archiveClassifier.set("")
 }
