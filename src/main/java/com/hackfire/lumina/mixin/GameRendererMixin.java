@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(GameRenderer.class)
 public class GameRendererMixin {
-    @Inject(method = "render" , at = @At("TAIL"))
+    @Inject(method = "render", at = @At("TAIL"))
     private void lumina$afterRender(float tickDelta, long startTime, boolean tick, CallbackInfo ci) {
         if (LuminaClient.getConfig() == null || !LuminaClient.getConfig().enabled) {
             return;

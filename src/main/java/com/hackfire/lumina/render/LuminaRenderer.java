@@ -6,8 +6,6 @@ import net.minecraft.client.gui.DrawContext;
 
 /**
  * Central render orchestrator. Keeps work budgets tight for phone.
- * Heavy systems (shadow map, god rays) are only scheduled when enabled
- * and within frame-time budget.
  */
 public class LuminaRenderer {
     private final LuminaConfig config;
@@ -19,22 +17,12 @@ public class LuminaRenderer {
     }
 
     public void tick(MinecraftClient client) {
-        // Frame-time gate: if last frame was > 28 ms, skip optional work
         long now = System.nanoTime();
         if (lastFrameNs > 0) {
             double dtMs = (now - lastFrameNs) / 1_000_000.0;
             smoothedMs = smoothedMs * 0.9 + dtMs * 0.1;
         }
         lastFrameNs = now;
-
-        boolean underBudget = smoothedMs < 28.0; // ~36 FPS floor for optional systems
-
-        if (config.softShadows && underBudget) {
-            // Shadow map update is driven from LevelRenderer mixin when ready
-        }
-        if (config.godRays && underBudget && smoothedMs < 22.0) {
-            // God-ray post only on healthier frames
-        }
     }
 
     public void renderDebugHud(DrawContext graphics, float tickDelta) {

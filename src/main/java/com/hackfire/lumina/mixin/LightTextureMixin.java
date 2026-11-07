@@ -13,12 +13,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(LightmapTextureManager.class)
 public class LightTextureMixin {
-    @Inject(method = "update" , at = @At("HEAD"))
+    @Inject(method = "update", at = @At("HEAD"))
     private void lumina$onLightmapUpdate(float delta, CallbackInfo ci) {
         LuminaConfig cfg = LuminaClient.getConfig();
         if (cfg == null || !cfg.enabled || !cfg.improvedAmbient) {
             return;
         }
-        // Future: adjust lightmap curve without fragile ModifyVariable
+        // Future: adjust lightmap curve
     }
 }
