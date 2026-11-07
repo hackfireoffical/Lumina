@@ -2,15 +2,20 @@ name: Build Lumina
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   release:
-    types: [ published ]
+    types: [published]
   workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    name: Build mod
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,33 +26,44 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew || true
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.8"
 
-      - name: Build with Gradle
+      - name: Generate Gradle Wrapper (if missing)
         run: |
-          if [ -f ./gradlew ]; then
-            ./gradlew build --no-daemon --stacktrace
+          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "Generating Gradle wrapper..."
+            gradle wrapper --gradle-version 8.8 --distribution-type bin
+            chmod +x gradlew
           else
-            gradle build --no-daemon --stacktrace
+            chmod +x gradlew
           fi
 
-      - name: Upload artifacts
+      - name: Build
+        run: ./gradlew build --no-daemon --stacktrace
+
+      - name: List artifacts
+        run: |
+          echo "=== build/libs ==="
+          ls -lh build/libs/ || true
+
+      - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
-          name: lumina-build
+          name: lumina-${{ github.sha }}
           path: |
-            build/libs/*.jar
+            build/libs/lumina-*.jar
             !build/libs/*-sources.jar
             !build/libs/*-dev.jar
-          if-no-files-found: warn
+            !build/libs/*-sources-dev.jar
+          if-no-files-found: error
+          retention-days: 14
 
   release:
+    name: Attach to GitHub Release
     needs: build
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
@@ -62,20 +78,29 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.8"
+
+      - name: Generate Gradle Wrapper (if missing)
+        run: |
+          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+            gradle wrapper --gradle-version 8.8 --distribution-type bin
+            chmod +x gradlew
+          else
+            chmod +x gradlew
+          fi
 
       - name: Build
-        run: |
-          if [ -f ./gradlew ]; then
-            ./gradlew build --no-daemon
-          else
-            gradle build --no-daemon
-          fi
+        run: ./gradlew build --no-daemon --stacktrace
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
             build/libs/lumina-*.jar
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
